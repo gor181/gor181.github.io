@@ -1,9 +1,12 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var is = function is(x, y) {
@@ -23,15 +26,20 @@ var deepEqual = function deepEqual(objA, objB) {
 		return true;
 	}
 
-	if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+	if ((typeof objA === 'undefined' ? 'undefined' : _typeof(objA)) !== 'object' || objA === null || (typeof objB === 'undefined' ? 'undefined' : _typeof(objB)) !== 'object' || objB === null) {
 		return false;
 	}
 
 	var keysA = Object.keys(objA);
+	var keysB = Object.keys(objB);
+	var allKeys = keysA.concat(keysB);
 
-	// Test for A's keys different from B.
-	for (var i = 0; i < keysA.length; i++) {
-		if (!hasOwnProperty.call(objB, keysA[i])) {
+	// Verify both objects have all the keys
+	for (var i = 0; i < allKeys.length; i++) {
+		if (!hasOwnProperty.call(objB, allKeys[i])) {
+			return false;
+		}
+		if (!hasOwnProperty.call(objA, allKeys[i])) {
 			return false;
 		}
 	}
@@ -49,26 +57,19 @@ var deepEqual = function deepEqual(objA, objB) {
 	return true;
 };
 
-exports['default'] = deepEqual;
-module.exports = exports['default'];
+exports.default = deepEqual;
 
 },{}],"react-chartjs-2":[function(require,module,exports){
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+exports.Chart = exports.defaults = exports.Bubble = exports.Polar = exports.Radar = exports.HorizontalBar = exports.Bar = exports.Line = exports.Pie = exports.Doughnut = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-exports.Doughnut = Doughnut;
-exports.Pie = Pie;
-exports.Line = Line;
-exports.Bar = Bar;
-exports.Radar = Radar;
-exports.Polar = Polar;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _react = require('react');
 
@@ -78,25 +79,37 @@ var _reactDom = require('react-dom');
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _chartJs = require('chart.js');
+var _chart = require('chart.js');
 
-var _chartJs2 = _interopRequireDefault(_chartJs);
+var _chart2 = _interopRequireDefault(_chart);
 
-var _utilsDeepEqual = require('./utils/deepEqual');
+var _deepEqual = require('./utils/deepEqual');
 
-var _utilsDeepEqual2 = _interopRequireDefault(_utilsDeepEqual);
+var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
-var ChartComponent = _react2['default'].createClass({
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ChartComponent = _react2.default.createClass({
 
 	displayName: 'ChartComponent',
 
 	propTypes: {
 		data: _react.PropTypes.object.isRequired,
+		getDatasetAtEvent: _react.PropTypes.func,
+		getElementAtEvent: _react.PropTypes.func,
+		getElementsAtEvent: _react.PropTypes.func,
 		height: _react.PropTypes.number,
 		legend: _react.PropTypes.object,
+		onElementsClick: _react.PropTypes.func,
 		options: _react.PropTypes.object,
 		redraw: _react.PropTypes.bool,
-		type: _react.PropTypes.oneOf(['doughnut', 'pie', 'line', 'bar', 'radar', 'polarArea']),
+		type: _react.PropTypes.oneOf(['doughnut', 'pie', 'line', 'bar', 'horizontalBar', 'radar', 'polarArea', 'bubble']),
 		width: _react.PropTypes.number
 	},
 
@@ -107,20 +120,17 @@ var ChartComponent = _react2['default'].createClass({
 				position: 'bottom'
 			},
 			type: 'doughnut',
-			height: 200,
-			width: 200,
+			height: 150,
+			width: 300,
 			redraw: false
 		};
 	},
-
 	componentWillMount: function componentWillMount() {
 		this.chart_instance = undefined;
 	},
-
 	componentDidMount: function componentDidMount() {
 		this.renderChart();
 	},
-
 	componentDidUpdate: function componentDidUpdate() {
 		if (this.props.redraw) {
 			this.chart_instance.destroy();
@@ -129,7 +139,6 @@ var ChartComponent = _react2['default'].createClass({
 			this.updateChart();
 		}
 	},
-
 	_objectWithoutProperties: function _objectWithoutProperties(obj, keys) {
 		var target = {};
 		for (var i in obj) {
@@ -139,37 +148,47 @@ var ChartComponent = _react2['default'].createClass({
 		}
 		return target;
 	},
-
 	shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-		var compareNext = this._objectWithoutProperties(nextProps, ['id', 'width', 'height']);
-		var compareNow = this._objectWithoutProperties(this.props, ['id', 'width', 'height']);
-		return !(0, _utilsDeepEqual2['default'])(compareNext, compareNow, { strict: true });
-	},
+		var ignoredProperties = ['id', 'width', 'height', 'onElementsClick'];
+		var compareNext = this._objectWithoutProperties(nextProps, ignoredProperties);
+		var compareNow = this._objectWithoutProperties(this.props, ignoredProperties);
 
+		return !(0, _deepEqual2.default)(compareNext, compareNow, { strict: true });
+	},
 	componentWillUnmount: function componentWillUnmount() {
 		this.chart_instance.destroy();
 	},
-
 	updateChart: function updateChart() {
-		var _this = this;
-
 		var _props = this.props;
 		var data = _props.data;
 		var options = _props.options;
 
+
 		if (!this.chart_instance) return;
 
 		if (options) {
-			_chartJs2['default'].helpers.configMerge(this.chart_instance.options, options);
+			this.chart_instance.options = _chart2.default.helpers.configMerge(this.chart_instance.options, options);
 		}
 
-		data.datasets.forEach(function (dataset, index) {
-			_this.chart_instance.data.datasets[index] = dataset;
+		var currentData = this.chart_instance.config.data.datasets;
+		var nextData = data.datasets;
+
+		nextData.forEach(function (dataset, sid) {
+			if (currentData[sid] && currentData[sid].data) {
+				currentData[sid].data.splice(nextData[sid].data.length);
+				dataset.data.forEach(function (point, pid) {
+					currentData[sid].data[pid] = nextData[sid].data[pid];
+				});
+			} else {
+				currentData[sid] = nextData[sid];
+			}
 		});
+		delete data.datasets;
+
+		this.chart_instance.config.data = _extends({}, this.chart_instance.config.data, data);
 
 		this.chart_instance.update();
 	},
-
 	renderChart: function renderChart() {
 		var _props2 = this.props;
 		var data = _props2.data;
@@ -177,51 +196,255 @@ var ChartComponent = _react2['default'].createClass({
 		var legend = _props2.legend;
 		var type = _props2.type;
 
-		var node = _reactDom2['default'].findDOMNode(this);
+		var node = _reactDom2.default.findDOMNode(this);
 
-		this.chart_instance = new _chartJs2['default'](node, {
+		this.chart_instance = new _chart2.default(node, {
 			type: type,
 			data: data,
 			options: options
 		});
 	},
+	handleOnClick: function handleOnClick(event) {
+		var instance = this.chart_instance;
 
-	render: function render() {
 		var _props3 = this.props;
-		var height = _props3.height;
-		var width = _props3.width;
+		var getDatasetAtEvent = _props3.getDatasetAtEvent;
+		var getElementAtEvent = _props3.getElementAtEvent;
+		var getElementsAtEvent = _props3.getElementsAtEvent;
+		var onElementsClick = _props3.onElementsClick;
 
-		return _react2['default'].createElement('canvas', {
+
+		getDatasetAtEvent && getDatasetAtEvent(instance.getDatasetAtEvent(event), event);
+		getElementAtEvent && getElementAtEvent(instance.getElementAtEvent(event), event);
+		getElementsAtEvent && getElementsAtEvent(instance.getElementsAtEvent(event), event);
+		onElementsClick && onElementsClick(instance.getElementsAtEvent(event), event); // Backward compatibility
+	},
+	render: function render() {
+		var _props4 = this.props;
+		var height = _props4.height;
+		var width = _props4.width;
+		var onElementsClick = _props4.onElementsClick;
+
+
+		return _react2.default.createElement('canvas', {
 			height: height,
-			width: width
+			width: width,
+			onClick: this.handleOnClick
 		});
 	}
 });
 
-exports['default'] = ChartComponent;
+exports.default = ChartComponent;
 
-function Doughnut(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'doughnut' }));
-}
+var Doughnut = exports.Doughnut = function (_React$Component) {
+	_inherits(Doughnut, _React$Component);
 
-function Pie(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'pie' }));
-}
+	function Doughnut() {
+		_classCallCheck(this, Doughnut);
 
-function Line(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'line' }));
-}
+		return _possibleConstructorReturn(this, (Doughnut.__proto__ || Object.getPrototypeOf(Doughnut)).apply(this, arguments));
+	}
 
-function Bar(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'bar' }));
-}
+	_createClass(Doughnut, [{
+		key: 'render',
+		value: function render() {
+			var _this2 = this;
 
-function Radar(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'radar' }));
-}
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref) {
+					return _this2.chart_instance = _ref && _ref.chart_instance;
+				},
+				type: 'doughnut'
+			}));
+		}
+	}]);
 
-function Polar(props) {
-	return _react2['default'].createElement(ChartComponent, _extends({}, props, { type: 'polarArea' }));
-}
+	return Doughnut;
+}(_react2.default.Component);
+
+var Pie = exports.Pie = function (_React$Component2) {
+	_inherits(Pie, _React$Component2);
+
+	function Pie() {
+		_classCallCheck(this, Pie);
+
+		return _possibleConstructorReturn(this, (Pie.__proto__ || Object.getPrototypeOf(Pie)).apply(this, arguments));
+	}
+
+	_createClass(Pie, [{
+		key: 'render',
+		value: function render() {
+			var _this4 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref2) {
+					return _this4.chart_instance = _ref2 && _ref2.chart_instance;
+				},
+				type: 'pie'
+			}));
+		}
+	}]);
+
+	return Pie;
+}(_react2.default.Component);
+
+var Line = exports.Line = function (_React$Component3) {
+	_inherits(Line, _React$Component3);
+
+	function Line() {
+		_classCallCheck(this, Line);
+
+		return _possibleConstructorReturn(this, (Line.__proto__ || Object.getPrototypeOf(Line)).apply(this, arguments));
+	}
+
+	_createClass(Line, [{
+		key: 'render',
+		value: function render() {
+			var _this6 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref3) {
+					return _this6.chart_instance = _ref3 && _ref3.chart_instance;
+				},
+				type: 'line'
+			}));
+		}
+	}]);
+
+	return Line;
+}(_react2.default.Component);
+
+var Bar = exports.Bar = function (_React$Component4) {
+	_inherits(Bar, _React$Component4);
+
+	function Bar() {
+		_classCallCheck(this, Bar);
+
+		return _possibleConstructorReturn(this, (Bar.__proto__ || Object.getPrototypeOf(Bar)).apply(this, arguments));
+	}
+
+	_createClass(Bar, [{
+		key: 'render',
+		value: function render() {
+			var _this8 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref4) {
+					return _this8.chart_instance = _ref4 && _ref4.chart_instance;
+				},
+				type: 'bar'
+			}));
+		}
+	}]);
+
+	return Bar;
+}(_react2.default.Component);
+
+var HorizontalBar = exports.HorizontalBar = function (_React$Component5) {
+	_inherits(HorizontalBar, _React$Component5);
+
+	function HorizontalBar() {
+		_classCallCheck(this, HorizontalBar);
+
+		return _possibleConstructorReturn(this, (HorizontalBar.__proto__ || Object.getPrototypeOf(HorizontalBar)).apply(this, arguments));
+	}
+
+	_createClass(HorizontalBar, [{
+		key: 'render',
+		value: function render() {
+			var _this10 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref5) {
+					return _this10.chart_instance = _ref5 && _ref5.chart_instance;
+				},
+				type: 'horizontalBar'
+			}));
+		}
+	}]);
+
+	return HorizontalBar;
+}(_react2.default.Component);
+
+var Radar = exports.Radar = function (_React$Component6) {
+	_inherits(Radar, _React$Component6);
+
+	function Radar() {
+		_classCallCheck(this, Radar);
+
+		return _possibleConstructorReturn(this, (Radar.__proto__ || Object.getPrototypeOf(Radar)).apply(this, arguments));
+	}
+
+	_createClass(Radar, [{
+		key: 'render',
+		value: function render() {
+			var _this12 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref6) {
+					return _this12.chart_instance = _ref6 && _ref6.chart_instance;
+				},
+				type: 'radar'
+			}));
+		}
+	}]);
+
+	return Radar;
+}(_react2.default.Component);
+
+var Polar = exports.Polar = function (_React$Component7) {
+	_inherits(Polar, _React$Component7);
+
+	function Polar() {
+		_classCallCheck(this, Polar);
+
+		return _possibleConstructorReturn(this, (Polar.__proto__ || Object.getPrototypeOf(Polar)).apply(this, arguments));
+	}
+
+	_createClass(Polar, [{
+		key: 'render',
+		value: function render() {
+			var _this14 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref7) {
+					return _this14.chart_instance = _ref7 && _ref7.chart_instance;
+				},
+				type: 'polarArea'
+			}));
+		}
+	}]);
+
+	return Polar;
+}(_react2.default.Component);
+
+var Bubble = exports.Bubble = function (_React$Component8) {
+	_inherits(Bubble, _React$Component8);
+
+	function Bubble() {
+		_classCallCheck(this, Bubble);
+
+		return _possibleConstructorReturn(this, (Bubble.__proto__ || Object.getPrototypeOf(Bubble)).apply(this, arguments));
+	}
+
+	_createClass(Bubble, [{
+		key: 'render',
+		value: function render() {
+			var _this16 = this;
+
+			return _react2.default.createElement(ChartComponent, _extends({}, this.props, {
+				ref: function ref(_ref8) {
+					return _this16.chart_instance = _ref8 && _ref8.chart_instance;
+				},
+				type: 'bubble'
+			}));
+		}
+	}]);
+
+	return Bubble;
+}(_react2.default.Component);
+
+var defaults = exports.defaults = _chart2.default.defaults;
+exports.Chart = _chart2.default;
 
 },{"./utils/deepEqual":1,"chart.js":undefined,"react":undefined,"react-dom":undefined}]},{},[]);
